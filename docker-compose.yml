@@ -1,0 +1,35 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    command: ["mongod", "--bind_ip_all"]
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    environment:
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017}
+      - DATABASE_NAME=${DATABASE_NAME:-proofflow}
+      - ADMIN_TOKEN=${ADMIN_TOKEN:-change-me}
+      - JWT_SECRET=${JWT_SECRET:-change-me}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL:-http://localhost:8000}
+      - STORAGE_PATH=${STORAGE_PATH:-/data}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
+    volumes:
+      - images-data:/data
+    ports:
+      - "8000:8000"
+
+volumes:
+  mongo-data:
+  images-data:
